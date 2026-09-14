@@ -25,11 +25,10 @@
         <header class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">Walter's Habit Tracker</h1>
-                <p id="sun-status" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Syncing with Vienna sun...</p>
             </div>
             <div class="flex items-center gap-2">
                 <!-- Dark/Light Theme Toggle Button -->
-                <button onclick="toggleThemeManual()" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-all" title="Toggle theme (Overrides auto-sync)">
+                <button onclick="toggleThemeManual()" class="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition-all" title="Toggle theme">
                     <i id="theme-icon" data-lucide="moon" class="w-4 h-4"></i>
                 </button>
                 <button onclick="openModal()" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-950 font-semibold text-sm px-3 py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-md shadow-emerald-500/20">
@@ -131,7 +130,6 @@
             if (isManualOverride) {
                 const savedTheme = localStorage.getItem('walter_theme');
                 isDarkMode = savedTheme === 'dark';
-                document.getElementById('sun-status').innerText = 'Manual mode (Override)';
                 applyTheme();
                 return;
             }
@@ -145,22 +143,17 @@
                     const now = new Date();
                     const dateStr = formatDateKey(now);
                     
-                    // Parse API times (Format: "6:30:00 AM") into JS Date objects
                     const sunriseTime = new Date(`${dateStr} ${data.results.sunrise}`);
                     const sunsetTime = new Date(`${dateStr} ${data.results.sunset}`);
                     
-                    // Add 1 hour (3600000 ms) delay to sunset for true darkness
+                    // Add 1 hour delay to sunset for true darkness
                     const darkStartTime = new Date(sunsetTime.getTime() + (60 * 60 * 1000));
 
-                    // Determine theme mode
                     if (now >= sunriseTime && now < darkStartTime) {
                         isDarkMode = false;
                     } else {
                         isDarkMode = true;
                     }
-
-                    const darkTimeFormatted = darkStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    document.getElementById('sun-status').innerText = `Vienna sun-sync (Dark at ${darkTimeFormatted})`;
                 } else {
                     fallbackTimeCheck();
                 }
@@ -174,18 +167,15 @@
         // Fallback calculation if offline or API unavailable
         function fallbackTimeCheck() {
             const hour = new Date().getHours();
-            // Default Vienna summer/winter estimate: dark between 20:00 and 06:00
             isDarkMode = (hour >= 20 || hour < 6);
-            document.getElementById('sun-status').innerText = 'Focus on identity. Never miss twice.';
         }
 
-        // User manual toggle (overrides auto sun-sync)
+        // User manual toggle
         function toggleThemeManual() {
             isDarkMode = !isDarkMode;
             isManualOverride = true;
             localStorage.setItem('walter_theme_override', 'true');
             localStorage.setItem('walter_theme', isDarkMode ? 'dark' : 'light');
-            document.getElementById('sun-status').innerText = 'Manual mode (Override)';
             applyTheme();
         }
 
